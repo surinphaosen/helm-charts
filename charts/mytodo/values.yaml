@@ -1,0 +1,10 @@
+todoImageUser: surinp
+todoVersion: "1.0"
+
+replicas:
+  mytodoApi: 1
+  mytodoElastic: 1
+  mytodoPostgres: 1
+  mytodoProxy: 1
+  mytodoRedis: 1
+  mytodoView: 1
