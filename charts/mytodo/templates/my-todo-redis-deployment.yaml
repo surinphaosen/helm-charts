@@ -2,7 +2,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  namespace: {{ template "mytodo.fullname" . }}-mytodo
+   
   name: my-todo-redis
   labels:
     my-todo-app-deployment: my-todo-redis

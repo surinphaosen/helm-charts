@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  namespace: {{ template "mytodo.fullname" . }}-mytodo
+   
   name: my-todo-elastic-data-pvc
 spec:
   #storageClassName: manual
