@@ -1,0 +1,33 @@
+#apiVersion: extensions/v1beta1
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: {{ template "mytodo.fullname" . }}-mytodo
+  name: my-todo-view
+  labels:
+    my-todo-app-deployment: my-todo-view
+spec:
+  replicas: {{ .Values.replicas.mytodoView }}
+  selector:
+      matchLabels:
+        my-todo-app-pod: my-todo-view
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+  template:
+    metadata:
+      labels:
+        my-todo-app-pod: my-todo-view
+    spec:
+      restartPolicy: Always
+      containers:
+      - name: my-todo-view
+        image: {{ .Values.todoImageUser }}/my-todo-view:{{ .Values.todoVersion }}
+        ports:
+        - containerPort: 4200
+        #- containerPort: 8080
+        resources:
+          limits:
+            memory: "805306368"

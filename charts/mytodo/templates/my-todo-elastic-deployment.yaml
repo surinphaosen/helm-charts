@@ -1,0 +1,68 @@
+#apiVersion: extensions/v1beta1
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: {{ template "mytodo.fullname" . }}-mytodo
+  name: my-todo-elastic
+  labels:
+    my-todo-app-deployment: my-todo-elastic
+spec:
+  replicas: {{ .Values.replicas.mytodoElastic }}
+  selector:
+      matchLabels:
+        my-todo-app-pod: my-todo-elastic
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        my-todo-app-pod: my-todo-elastic
+    spec:
+      restartPolicy: Always
+      initContainers:
+        - name: set-permissions
+          image: registry.hub.docker.com/library/busybox:latest
+          command: ['sh', '-c', 'mkdir -p /usr/share/elasticsearch/data && chown 1000:1000 /usr/share/elasticsearch/data']
+          volumeMounts:
+            - mountPath: /usr/share/elasticsearch/data
+              name: my-todo-elastic-data
+      containers:
+      - name: my-todo-elastic
+        image: elasticsearch:7.5.2
+        #command: ['chown', '-R', '1000:1000', '/usr/share/elasticsearch/']
+        env:
+        - name: discovery.type
+          value: single-node
+        ports:
+        - name: es-http
+          containerPort: 9200
+        - name: es-transport
+          containerPort: 9300
+        resources:
+          limits:
+            memory: "2Gi"
+        volumeMounts:
+        - mountPath: /usr/share/elasticsearch/data
+          name: my-todo-elastic-data
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 9200
+            scheme: HTTP
+          timeoutSeconds: 1
+          successThreshold: 3
+        livenessProbe:
+          httpGet:
+            path: /_cluster/health
+            port: 9200
+            scheme: HTTP
+          initialDelaySeconds: 360
+          timeoutSeconds: 2
+      volumes:
+      - name: my-todo-elastic-data
+        persistentVolumeClaim:
+          claimName: my-todo-elastic-data-pvc
+      # lifecycle:
+      #   postStart:
+      #     exec:
+      #       command: ['/bin/sh','-c','sysctl -w vm.max_map_count=262144']

@@ -1,0 +1,32 @@
+#apiVersion: extensions/v1beta1
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: {{ template "mytodo.fullname" . }}-mytodo
+  name: my-todo-proxy
+  labels:
+    my-todo-app-deployment: my-todo-proxy
+spec:
+  replicas: {{ .Values.replicas.mytodoProxy }}
+  selector:
+      matchLabels:
+        my-todo-app-pod: my-todo-proxy
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+  template:
+    metadata:
+      labels:
+        my-todo-app-pod: my-todo-proxy
+    spec:
+      restartPolicy: Always
+      containers:
+      - name: my-todo-proxy
+        image: {{ .Values.todoImageUser }}/my-todo-proxy:{{ .Values.todoVersion }}
+        ports:
+        - containerPort: 80
+        resources:
+          limits:
+            memory: "1.5Gi"

@@ -1,0 +1,52 @@
+#apiVersion: extensions/v1beta1
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: {{ template "mytodo.fullname" . }}-mytodo
+  name: my-todo-redis
+  labels:
+    my-todo-app-deployment: my-todo-redis
+spec:
+  replicas: {{ .Values.replicas.mytodoRedis }}
+  selector:
+      matchLabels:
+        my-todo-app-pod: my-todo-redis
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+  template:
+    metadata:
+      labels:
+        my-todo-app-pod: my-todo-redis
+    spec:
+      restartPolicy: Always
+      containers:
+      - name: my-todo-redis
+        image: redis:5.0.3
+        ports:
+        - containerPort: 6379
+        resources:
+          limits:
+            memory: "268435456"
+        readinessProbe:
+          exec:
+            command:
+            - redis-cli
+            - ping
+          initialDelaySeconds: 15
+          failureThreshold: 3
+          successThreshold: 1
+          periodSeconds: 10
+          timeoutSeconds: 10
+        livenessProbe:
+          exec:
+            command:
+            - redis-cli
+            - ping
+          initialDelaySeconds: 20
+          failureThreshold: 3
+          successThreshold: 1
+          periodSeconds: 5
+          timeoutSeconds: 1
